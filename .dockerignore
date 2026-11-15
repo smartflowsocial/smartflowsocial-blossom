@@ -1,0 +1,13 @@
+node_modules
+.git
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+id_rsa
+id_ed25519
+credentials.json
+secrets/
+*.log
+.DS_Store

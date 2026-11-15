@@ -1,0 +1,104 @@
+{
+  "name": "smartflowsocial-blossom",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Blossom media gateway for SmartFlowSocial. Authenticates uploads, stores media in Cloudflare R2, and commits them back to SmartFlowSocial.",
+  "main": "build/index.js",
+  "packageManager": "pnpm@10.27.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3"
+    ]
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:unit": "vitest run tests/services tests/routes tests/utils tests/errors.test.ts tests/server.test.ts",
+    "test:integration": "vitest run tests/integration",
+    "test:security": "vitest run tests/security",
+    "test:property": "vitest run tests/property",
+    "test:performance": "vitest run tests/performance",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "build": "esbuild --platform=node --format=esm ./src/index.ts --outdir=build --bundle --packages=external",
+    "start": "cross-env NODE_ENV=production node ./build/index.js",
+    "dev": "cross-env NODE_ENV=development esbuild --platform=node --format=esm ./src/index.ts --outdir=build --bundle --packages=external --watch",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
+    "lint:ci": "eslint . --format json --output-file eslint-report.json || exit 1",
+    "typecheck": "tsc --noEmit",
+    "precheck": "pnpm lint && pnpm exec tsc --noEmit",
+    "validate": "pnpm format:check && pnpm lint:ci && pnpm typecheck",
+    "ci:test": "pnpm validate && pnpm test && pnpm test:coverage && pnpm build",
+    "prepare": "husky",
+    "clean": "rm -rf build node_modules/.cache .tsbuildinfo"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,jsx,json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "keywords": [
+    "nostr",
+    "blossom",
+    "smartflow",
+    "r2"
+  ],
+  "author": "SmartFlowSocial",
+  "license": "Unlicense",
+  "homepage": "https://smartflow.social",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smartflowsocial/smartflowsocial-blossom.git"
+  },
+  "bugs": {
+    "url": "https://github.com/smartflowsocial/smartflowsocial-blossom/issues"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.6",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^26.6.6",
+    "@typescript-eslint/eslint-plugin": "^8.72.1",
+    "@typescript-eslint/parser": "^8.72.1",
+    "@vitest/coverage-v8": "^4.0.16",
+    "cross-env": "^10.1.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-no-secrets": "^2.3.3",
+    "eslint-plugin-promise": "^7.3.0",
+    "globals": "^17.14.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prettier": "3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^5.3.3",
+    "vite-tsconfig-paths": "^6.0.3",
+    "vitest": "^4.0.16"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1164.0",
+    "@aws-sdk/lib-storage": "^3.1161.0",
+    "better-sqlite3": "^12.11.1",
+    "cors": "^2.8.5",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "file-type": "^22.3.0",
+    "mime": "^4.1.2",
+    "morgan": "^1.12.1",
+    "nostr-tools": "^2.26.0",
+    "redis": "^6.3.1"
+  }
+}

@@ -1,0 +1,9 @@
+# Build and deps
+build
+node_modules
+
+# pnpm rewrites this file. Prettier requotes it and fails dependency updates.
+pnpm-lock.yaml
+
+# Static assets (may have non-standard formatting)
+static
