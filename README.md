@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/smartflowsocial/smartflowsocial-blossom/actions/workflows/ci.yml/badge.svg)](https://github.com/smartflowsocial/smartflowsocial-blossom/actions/workflows/ci.yml)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue)](LICENSE)
-[![Node 20+](https://img.shields.io/badge/node-20%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Node 26.13.1+](https://img.shields.io/badge/node-26.13.1%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 
 [Blossom](https://github.com/hzrd149/blossom) (BUD) media gateway for
 [SmartFlowSocial](https://smartflow.social). It authenticates uploads, verifies blob integrity,
@@ -58,7 +58,7 @@ flowchart TD
 
 ## Requirements
 
-- Node.js `>=20`
+- Node.js 26.13.1 or newer (`.nvmrc`)
 - `pnpm` (project uses `pnpm@10.27.0`)
 - Cloudflare R2 bucket + credentials
 - Optional SmartFlow internal endpoints (commit/policy) for full authoritative behavior
