@@ -2,11 +2,14 @@ import express from "express";
 
 import { loadConfig } from "../config.js";
 import { fetchJsonWithRetry } from "../services/http-client.js";
-import { headObject } from "../services/storage.js";
+import { probeStorage, type StorageProbeResult } from "../services/storage.js";
 import type { AppInstance } from "../types.js";
 
 export function createHealthRouter(
-  app: express.Application & AppInstance
+  app: express.Application & AppInstance,
+  options?: {
+    probeStorage?: () => Promise<StorageProbeResult>;
+  }
 ): express.Router {
   const router = express.Router();
   router.get("/health", (_req, res) => {
@@ -15,56 +18,59 @@ export function createHealthRouter(
 
   router.get("/ready", (_req, res) => {
     void (async () => {
-      const config = loadConfig();
-      const checks: Record<string, unknown> = {
-        db: app.db.ping(),
-        storage: false,
-        pendingCommits: app.db.countRetryableUncommitted(),
-        deadLetterCommits: app.db.countDeadLetterUncommitted(),
-        policy: "not_configured",
-      };
+      try {
+        const config = loadConfig();
+        const checks: Record<string, unknown> = {
+          db: app.db.ping(),
+          storage: false,
+          pendingCommits: app.db.countRetryableUncommitted(),
+          deadLetterCommits: app.db.countDeadLetterUncommitted(),
+          policy: "not_configured",
+        };
 
-      if (config.nodeEnv === "test") {
-        checks["storage"] = true;
-      } else {
-        try {
-          await headObject("__readiness_probe__");
-          checks["storage"] = true;
-        } catch {
-          checks["storage"] = false;
+        const probe = await (options?.probeStorage ?? probeStorage)();
+        checks["storage"] = probe.ok;
+        if (probe.ok) checks["storageProbe"] = probe.probe;
+        else checks["storageError"] = probe.reason;
+
+        if (config.sfs.policyUrl && config.sfs.internalSecret) {
+          const response = await fetchJsonWithRetry<unknown>(
+            `${config.sfs.policyUrl.replace(/\/$/, "")}?pubkey=readiness_probe`,
+            "GET",
+            {
+              timeoutMs: 1_500,
+              retries: 0,
+              headers: {
+                "x-internal-secret": config.sfs.internalSecret,
+              },
+            }
+          );
+          checks["policy"] = response.ok ? "ok" : "unavailable";
+        }
+
+        const pendingCommits = checks["pendingCommits"] as number;
+        const deadLetterCommits = checks["deadLetterCommits"] as number;
+        const ready =
+          checks["db"] === true &&
+          checks["storage"] === true &&
+          pendingCommits <= config.sfs.readinessMaxPendingCommits &&
+          deadLetterCommits <= config.sfs.readinessMaxDeadLetterCommits &&
+          checks["policy"] !== "unavailable";
+
+        if (ready) {
+          res.status(200).json({ status: "ready", checks });
+          return;
+        }
+
+        res.status(503).json({ status: "not_ready", checks });
+      } catch {
+        if (!res.headersSent) {
+          res.status(503).json({
+            status: "not_ready",
+            checks: { error: "readiness_check_failed" },
+          });
         }
       }
-
-      if (config.sfs.policyUrl && config.sfs.internalSecret) {
-        const response = await fetchJsonWithRetry<unknown>(
-          `${config.sfs.policyUrl.replace(/\/$/, "")}?pubkey=readiness_probe`,
-          "GET",
-          {
-            timeoutMs: 1_500,
-            retries: 0,
-            headers: {
-              "x-internal-secret": config.sfs.internalSecret,
-            },
-          }
-        );
-        checks["policy"] = response.ok ? "ok" : "unavailable";
-      }
-
-      const pendingCommits = checks["pendingCommits"] as number;
-      const deadLetterCommits = checks["deadLetterCommits"] as number;
-      const ready =
-        checks["db"] === true &&
-        checks["storage"] === true &&
-        pendingCommits <= config.sfs.readinessMaxPendingCommits &&
-        deadLetterCommits <= config.sfs.readinessMaxDeadLetterCommits &&
-        checks["policy"] !== "unavailable";
-
-      if (ready) {
-        res.status(200).json({ status: "ready", checks });
-        return;
-      }
-
-      res.status(503).json({ status: "not_ready", checks });
     })();
   });
   return router;

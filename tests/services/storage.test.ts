@@ -68,9 +68,73 @@ describe("storage", () => {
       expect(result).toEqual({ exists: false });
     });
 
+    it("returns exists false when R2 answers 404 without a NotFound name", async () => {
+      const error = new Error("bucket and key omitted");
+      error.name = "Unknown";
+      Object.assign(error, { $metadata: { httpStatusCode: 404 } });
+      mockSend.mockRejectedValueOnce(error);
+      const result = await storage.headObject("missing");
+      expect(result).toEqual({ exists: false });
+    });
+
+    it("rethrows authorization errors", async () => {
+      const error = new Error("denied");
+      error.name = "AccessDenied";
+      Object.assign(error, { $metadata: { httpStatusCode: 403 } });
+      mockSend.mockRejectedValueOnce(error);
+      await expect(storage.headObject("k")).rejects.toThrow("denied");
+    });
+
     it("rethrows other errors", async () => {
       mockSend.mockRejectedValueOnce(new Error("network"));
       await expect(storage.headObject("k")).rejects.toThrow("network");
+    });
+  });
+
+  describe("probeStorage", () => {
+    it("treats a missing probe object as healthy storage", async () => {
+      const result = await storage.probeStorage({
+        head: async () => ({ exists: false }),
+      });
+      expect(result).toEqual({ ok: true, probe: "missing" });
+    });
+
+    it("treats a present probe object as healthy storage", async () => {
+      const result = await storage.probeStorage({
+        head: async () => ({ exists: true }),
+      });
+      expect(result).toEqual({ ok: true, probe: "present" });
+    });
+
+    it("reports access denied without calling the object present", async () => {
+      const error = new Error("secret-looking message");
+      error.name = "AccessDenied";
+      const result = await storage.probeStorage({
+        head: async () => {
+          throw error;
+        },
+      });
+      expect(result).toEqual({ ok: false, reason: "access_denied" });
+    });
+
+    it("reports a hung storage call as a timeout", async () => {
+      const result = await storage.probeStorage({
+        timeoutMs: 20,
+        head: () => new Promise(() => undefined),
+      });
+      expect(result).toEqual({ ok: false, reason: "timeout" });
+    });
+
+    it("reports a refused connection as a network failure", async () => {
+      const error = Object.assign(new Error("refused"), {
+        code: "ECONNREFUSED",
+      });
+      const result = await storage.probeStorage({
+        head: async () => {
+          throw error;
+        },
+      });
+      expect(result).toEqual({ ok: false, reason: "network" });
     });
   });
 
