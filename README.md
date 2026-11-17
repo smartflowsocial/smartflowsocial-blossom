@@ -59,7 +59,7 @@ flowchart TD
 ## Requirements
 
 - Node.js 26.13.1 or newer (`.nvmrc`)
-- `pnpm` (project uses `pnpm@10.27.0`)
+- `pnpm` (project uses `pnpm@12.21.0`)
 - Cloudflare R2 bucket + credentials
 - Optional SmartFlow internal endpoints (commit/policy) for full authoritative behavior
 

@@ -15,9 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN npm install --global corepack@0.36.0 \
     && corepack enable \
-    && corepack prepare pnpm@10.27.0 --activate
+    && corepack prepare pnpm@12.21.0 --activate
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
@@ -38,10 +38,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN npm install --global corepack@0.36.0 \
     && corepack enable \
-    && corepack prepare pnpm@10.27.0 --activate
+    && corepack prepare pnpm@12.21.0 --activate
 
-COPY package.json pnpm-lock.yaml ./
-# --ignore-scripts skips root "prepare" (husky not installed in prod); onlyBuiltDependencies allows rebuild of better-sqlite3
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# --ignore-scripts skips root "prepare" (husky not installed in prod); allowBuilds lets better-sqlite3 rebuild
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts \
     && pnpm rebuild better-sqlite3 \
     && apt-get purge -y --auto-remove python3 make g++ \
