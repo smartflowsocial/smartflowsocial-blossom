@@ -12,8 +12,8 @@ importers:
         specifier: ^3.1167.0
         version: 3.1167.0
       '@aws-sdk/lib-storage':
-        specifier: ^3.1161.0
-        version: 3.1161.0(@aws-sdk/client-s3@3.1167.0)
+        specifier: ^3.1167.0
+        version: 3.1167.0(@aws-sdk/client-s3@3.1167.0)
       better-sqlite3:
         specifier: ^12.11.1
         version: 12.11.1
@@ -164,11 +164,11 @@ packages:
     resolution: {integrity: sha512-duLeE3xlf0viHeH+1RM4z5duR3b32BCZTWVMu+MbxFPjQBxy7hmIGEqt5hekuFPRuXoyhMovjNl+PNNsb5oiGQ==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/lib-storage@3.1161.0':
-    resolution: {integrity: sha512-ROSytGylVRtkUsp64mpzryv1Puvgo6jAm4RWTW2m3kC4SSsjrvhqZa5uPKfz116a0U1kk/hBz9S1eBItkyd++w==}
+  '@aws-sdk/lib-storage@3.1167.0':
+    resolution: {integrity: sha512-OdV5oTxZKjoyeRMYpbEDu/JaKiRY+NaukQOqKF5xX6/107cpbR3JbcxxesAOTmygNH7thmpaAnaWe78j4Oisdg==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
-      '@aws-sdk/client-s3': ^3.1161.0
+      '@aws-sdk/client-s3': ^3.1167.0
 
   '@aws-sdk/middleware-sdk-s3@3.972.89':
     resolution: {integrity: sha512-Lem2/ZT1eOicVATBukPRPm2S4JAmrTEkP3/dnJE9iTeyqIKqsJF2j04f5L0o+rrZIrwR13swiQMdzcE5jXRzNA==}
@@ -813,10 +813,6 @@ packages:
   '@scure/bip39@2.0.1':
     resolution: {integrity: sha512-PsxdFj/d2AcJcZDX1FXN3dDgitDDTmwf78rKZq1a6c1P1Nan1X/Sxc7667zU3U+AN60g7SxxP0YCVw2H/hBycg==}
 
-  '@smithy/core@3.38.1':
-    resolution: {integrity: sha512-U/mB2XiwTLaf+NSgLSWwJfptsMT/H8aBi0aTAA/E5e2/TagFeGCqAyhKGG0w0A9IWTkm4qYEmLoD/HB6aYfnRA==}
-    engines: {node: '>=18.0.0'}
-
   '@smithy/core@3.40.0':
     resolution: {integrity: sha512-DssGno52pzZ5m6RlDtyKuBIpZNPg9pqgs0CnNDKz9IatxCsmvNmJNn5Zn6rf77MthZo9wf89OvZFhTY/RwxhxQ==}
     engines: {node: '>=18.0.0'}
@@ -835,10 +831,6 @@ packages:
 
   '@smithy/signature-v4@5.7.5':
     resolution: {integrity: sha512-WPjdr5oWOk1LArpI4pavu+fSo+/evi0Re1olxGvqwuZopd4gYR1UGCi+Soyn/IjmafqbWs+ZC+3AKxJS3ZpwUg==}
-    engines: {node: '>=18.0.0'}
-
-  '@smithy/types@4.19.0':
-    resolution: {integrity: sha512-r7jh49VJxGerfAcTQA6gXcKc+98zOp/tqRwzYjgOE+iSQsP6cEU1hq2QzbuipmP68QtYdY9wKEhiCQZIzHgZ4Q==}
     engines: {node: '>=18.0.0'}
 
   '@smithy/types@4.20.0':
@@ -2759,11 +2751,11 @@ snapshots:
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
-  '@aws-sdk/lib-storage@3.1161.0(@aws-sdk/client-s3@3.1167.0)':
+  '@aws-sdk/lib-storage@3.1167.0(@aws-sdk/client-s3@3.1167.0)':
     dependencies:
       '@aws-sdk/client-s3': 3.1167.0
-      '@smithy/core': 3.38.1
-      '@smithy/types': 4.19.0
+      '@smithy/core': 3.40.0
+      '@smithy/types': 4.20.0
       buffer: 5.6.0
       events: 3.3.0
       stream-browserify: 3.0.0
@@ -3183,11 +3175,6 @@ snapshots:
       '@noble/hashes': 2.0.1
       '@scure/base': 2.0.0
 
-  '@smithy/core@3.38.1':
-    dependencies:
-      '@smithy/types': 4.20.0
-      tslib: 2.9.1
-
   '@smithy/core@3.40.0':
     dependencies:
       '@smithy/types': 4.20.0
@@ -3215,10 +3202,6 @@ snapshots:
     dependencies:
       '@smithy/core': 3.40.0
       '@smithy/types': 4.20.0
-      tslib: 2.9.1
-
-  '@smithy/types@4.19.0':
-    dependencies:
       tslib: 2.9.1
 
   '@smithy/types@4.20.0':
