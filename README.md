@@ -191,7 +191,9 @@ Returns object metadata if present:
 ### Operational Endpoints
 
 - `GET /health` - liveness
-- `GET /ready` - dependency-aware readiness (DB, storage, policy status, backlog)
+- `GET /ready` - dependency-aware readiness (DB, storage, policy status, backlog). A missing
+  readiness probe object is healthy. Permission, network, and timeout failures stay HTTP 503 and set
+  `checks.storageError`. See [docs/ops/r2-readiness.md](docs/ops/r2-readiness.md).
 - `GET /metrics` - Prometheus-style metrics; open by default only in dev/test when no
   token/allowlist is configured
 

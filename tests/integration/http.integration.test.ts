@@ -23,7 +23,11 @@ function makeTestApp(dbHealthy = true) {
     countRetryableUncommitted: () => 0,
     countDeadLetterUncommitted: () => 0,
   };
-  app.use(createHealthRouter(app as never));
+  app.use(
+    createHealthRouter(app as never, {
+      probeStorage: async () => ({ ok: true, probe: "missing" }),
+    })
+  );
   app.put("/upload", (req, res, next) => {
     void uploadRoute(req as AppRequest, res).catch(next);
   });
@@ -90,6 +94,44 @@ describe("integration http routes", () => {
       expect(health.status).toBe(200);
       const ready = await fetch(`${baseUrl}/ready`);
       expect(ready.status).toBe(200);
+      const body = (await ready.json()) as {
+        checks: { storage: boolean; storageProbe: string };
+      };
+      expect(body.checks.storage).toBe(true);
+      expect(body.checks.storageProbe).toBe("missing");
+    });
+  });
+
+  it("returns 503 when storage refuses the readiness probe", async () => {
+    const app = express();
+    (
+      app as unknown as {
+        db: {
+          ping: () => boolean;
+          countRetryableUncommitted: () => number;
+          countDeadLetterUncommitted: () => number;
+        };
+      }
+    ).db = {
+      ping: () => true,
+      countRetryableUncommitted: () => 0,
+      countDeadLetterUncommitted: () => 0,
+    };
+    app.use(
+      createHealthRouter(app as never, {
+        probeStorage: async () => ({ ok: false, reason: "access_denied" }),
+      })
+    );
+    await withServer(app, async (baseUrl) => {
+      const ready = await fetch(`${baseUrl}/ready`);
+      expect(ready.status).toBe(503);
+      const body = (await ready.json()) as {
+        status: string;
+        checks: { storage: boolean; storageError: string };
+      };
+      expect(body.status).toBe("not_ready");
+      expect(body.checks.storage).toBe(false);
+      expect(body.checks.storageError).toBe("access_denied");
     });
   });
 

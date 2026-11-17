@@ -79,9 +79,13 @@ describe("running gateway", () => {
     expect(await health.text()).toBe("OK");
 
     const ready = await text("/ready");
-    expect([200, 503]).toContain(ready.status);
-    const readyBody = (await ready.json()) as { checks: { policy: string } };
+    expect(ready.status).toBe(503);
+    const readyBody = (await ready.json()) as {
+      checks: { policy: string; storage: boolean; storageError: string };
+    };
     expect(readyBody.checks.policy).toBe("unavailable");
+    expect(readyBody.checks.storage).toBe(false);
+    expect(readyBody.checks.storageError).toBe("unavailable");
 
     const denied = await text("/metrics");
     expect(denied.status).toBe(401);
