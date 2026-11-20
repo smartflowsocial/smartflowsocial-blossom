@@ -8,8 +8,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
-  id-token: write
 
 jobs:
   security-release:
@@ -36,31 +34,40 @@ jobs:
         run: pnpm audit --prod --audit-level high
 
       - name: Build app image
-        run: docker build -t ghcr.io/${{ github.repository }}:${{ github.ref_name }} .
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME//\//-}"
+          image="ghcr.io/${GITHUB_REPOSITORY}:${tag}"
+          docker build -t "$image" .
+          echo "IMAGE_TAG=${tag}" >> "$GITHUB_ENV"
+          echo "IMAGE_REF=${image}" >> "$GITHUB_ENV"
 
+      # ignore-unfixed keeps HIGH and CRITICAL. It fails a finding that has a
+      # fixed version and skips one Debian has not packaged a fix for.
+      # CVE-2023-45853 is Debian will_not_fix: the report is minizip in zlib's
+      # contrib, and that code is not built into zlib1g.
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          image-ref: ${{ env.IMAGE_REF }}
           format: table
           exit-code: "1"
+          ignore-unfixed: true
           severity: HIGH,CRITICAL
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
-          image: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          image: ${{ env.IMAGE_REF }}
           output-file: sbom.spdx.json
           format: spdx-json
+          upload-release-assets: false
 
       - name: Upload SBOM artifact
         uses: actions/upload-artifact@v7
         with:
-          name: sbom-${{ github.ref_name }}
+          name: sbom-${{ env.IMAGE_TAG }}
           path: sbom.spdx.json
 
-      - name: Generate build provenance attestation
-        uses: actions/attest-build-provenance@v4
-        with:
-          subject-name: ghcr.io/${{ github.repository }}
-          subject-digest: sha256:${{ hashFiles('Dockerfile', 'package.json', 'pnpm-lock.yaml') }}
+      # This job builds a local image for Trivy. It does not push, so it has no
+      # registry digest to attest. docker-image.yml attests the digest it pushes.
