@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   security-release:
@@ -34,6 +35,7 @@ jobs:
         env:
           IMAGE_DIGEST: ${{ inputs.image_digest }}
           CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           case "$IMAGE_DIGEST" in
@@ -52,6 +54,7 @@ jobs:
             echo "checked out ${actual}, expected ${CANDIDATE_SHA}"
             exit 1
           fi
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           image="ghcr.io/${GITHUB_REPOSITORY}@${IMAGE_DIGEST}"
           docker pull "$image"
           echo "IMAGE_TAG=verify-${actual:0:12}" >> "$GITHUB_ENV"
