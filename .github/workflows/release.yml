@@ -8,8 +8,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
-  id-token: write
 
 jobs:
   security-release:
@@ -59,8 +57,5 @@ jobs:
           name: sbom-${{ github.ref_name }}
           path: sbom.spdx.json
 
-      - name: Generate build provenance attestation
-        uses: actions/attest-build-provenance@v4
-        with:
-          subject-name: ghcr.io/${{ github.repository }}
-          subject-digest: sha256:${{ hashFiles('Dockerfile', 'package.json', 'pnpm-lock.yaml') }}
+      # This job builds a local image for Trivy. It does not push, so it has no
+      # registry digest to attest. docker-image.yml attests the digest it pushes.
