@@ -42,12 +42,17 @@ jobs:
           echo "IMAGE_TAG=${tag}" >> "$GITHUB_ENV"
           echo "IMAGE_REF=${image}" >> "$GITHUB_ENV"
 
+      # ignore-unfixed keeps HIGH and CRITICAL. It fails a finding that has a
+      # fixed version and skips one Debian has not packaged a fix for.
+      # CVE-2023-45853 is Debian will_not_fix: the report is minizip in zlib's
+      # contrib, and that code is not built into zlib1g.
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.IMAGE_REF }}
           format: table
           exit-code: "1"
+          ignore-unfixed: true
           severity: HIGH,CRITICAL
 
       - name: Generate SBOM

@@ -32,7 +32,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Build tools required for better-sqlite3 native addon (must compile in this stage for target arch)
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
     python3 make g++ \
     && rm -rf /var/lib/apt/lists/*
 
@@ -45,7 +46,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts \
     && pnpm rebuild better-sqlite3 \
     && apt-get purge -y --auto-remove python3 make g++ \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /usr/local/lib/node_modules /root/.npm /root/.cache /root/.local \
+    && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/pnpm /usr/local/bin/pnpx
 
 COPY --from=builder /app/build ./build
 
