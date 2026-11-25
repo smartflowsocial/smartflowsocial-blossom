@@ -52,8 +52,9 @@ describe("compat policy service", () => {
   });
 
   it("returns unavailable when policy service fails", async () => {
-    fetchMock.mockResolvedValueOnce({ ok: false, status: 503 });
+    fetchMock.mockResolvedValue({ ok: false, status: 503 });
     const result = await getCompatPolicyForPubkey("pk");
     expect(result.state).toBe("unavailable");
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 });

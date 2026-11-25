@@ -2,6 +2,7 @@ import express from "express";
 
 import { loadConfig } from "../config.js";
 import { fetchJsonWithRetry } from "../services/http-client.js";
+import { compatPolicyFetchOptions } from "../services/policy.js";
 import { probeStorage, type StorageProbeResult } from "../services/storage.js";
 import type { AppInstance } from "../types.js";
 
@@ -38,8 +39,7 @@ export function createHealthRouter(
             `${config.sfs.policyUrl.replace(/\/$/, "")}?pubkey=readiness_probe`,
             "GET",
             {
-              timeoutMs: 1_500,
-              retries: 0,
+              ...compatPolicyFetchOptions,
               headers: {
                 "x-internal-secret": config.sfs.internalSecret,
               },

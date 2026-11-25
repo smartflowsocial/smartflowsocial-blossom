@@ -1,7 +1,17 @@
 import { loadConfig } from "../config.js";
 import { log } from "../logger.js";
 
-import { fetchJsonWithRetry } from "./http-client.js";
+import { fetchJsonWithRetry, type RetryFetchOptions } from "./http-client.js";
+
+/**
+ * Compat uploads and `GET /ready` share this budget. A stricter probe reports
+ * the gateway down for a delay an upload would still complete.
+ */
+export const compatPolicyFetchOptions = {
+  timeoutMs: 3_000,
+  retries: 2,
+  retryOnStatus: [408, 425, 429, 502, 503, 504],
+} satisfies Pick<RetryFetchOptions, "timeoutMs" | "retries" | "retryOnStatus">;
 
 interface CachedPolicy {
   expiresAtMs: number;
@@ -52,9 +62,7 @@ export async function getCompatPolicyForPubkey(
       planId?: string | null;
       allowCompatUpload?: boolean;
     }>(url, "GET", {
-      timeoutMs: 3_000,
-      retries: 2,
-      retryOnStatus: [408, 425, 429, 502, 503, 504],
+      ...compatPolicyFetchOptions,
       requestId: options?.requestId,
       headers: {
         "x-internal-secret": sfs.internalSecret,
